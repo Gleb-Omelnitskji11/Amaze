@@ -36,6 +36,9 @@ public class GameManager : MonoBehaviour
         _ui.UpdateProgress(percent);
 
         if (percent >= 100f)
+        {
+            _levelProgressor.CompleteLevel();
             _ui.ShowWin();
+        }
     }
 }

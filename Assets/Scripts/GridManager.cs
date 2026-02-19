@@ -32,7 +32,28 @@ public class GridManager : MonoBehaviour
 
     public void PaintStartCell()
     {
+        if (IsEmpty(CurrentLevel.StartPosition))
+        {
+            Debug.LogWarning("Wrong Start Position");
+            CurrentLevel.StartPosition = FindFirstExistCell();
+        }
         GetCell(CurrentLevel.StartPosition).PaintFilled();
+    }
+
+    private Vector2Int FindFirstExistCell()
+    {
+        for (int i = 0; i < CurrentLevel.Cells.Length; i++)
+        {
+            if (CurrentLevel.Cells[i] == CellType.Exist)
+            {
+                int x = i % CurrentLevel.Width;
+                int y = i / CurrentLevel.Width;
+                return new Vector2Int(x, y);
+            }
+        }
+
+        Debug.LogWarning("No free cell found in level!");
+        return Vector2Int.zero;
     }
 
     public int GenerateGrid()

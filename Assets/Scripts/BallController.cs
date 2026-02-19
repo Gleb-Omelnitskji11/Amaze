@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class BallController : MonoBehaviour
@@ -10,6 +12,7 @@ public class BallController : MonoBehaviour
     private bool _isMoving;
     private Vector2Int _currentPos;
     private float _speed;
+    private Sequence _sequence;
 
     public void Initialize(GameSettings settings, GridManager grid)
     {
@@ -29,40 +32,72 @@ public class BallController : MonoBehaviour
     private void Move(Vector2Int direction)
     {
         if (_isMoving) return;
-        StartCoroutine(MoveRoutine(direction));
+
+        Vector2Int checkPos = _currentPos;
+        List<CellView> path = GetPath(direction, ref checkPos);
+
+        if (path.Count == 0)
+            return;
+
+        _isMoving = true;
+        bool isVertical = direction.x == checkPos.x;
+        _currentPos = checkPos;
+
+        Vector3 targetPosition = path[^1].Position;
+
+        float duration = Vector3.Distance(transform.position, targetPosition) / _settings.MoveSpeed;
+        float scaleDuration = duration * 0.3f > 0.3f ? 0.3f : duration * 0.3f;
+
+        int paintedIndex = 0;
+
+        _sequence = DOTween.Sequence();
+
+        _sequence.Append(
+            transform.DOMove(targetPosition, duration)
+                .SetEase(Ease.InOutSine)
+                .OnUpdate(() =>
+                {
+                    if (paintedIndex >= path.Count) return;
+
+                    if (Vector3.Distance(transform.position, path[paintedIndex].Position) < 0.05f)
+                    {
+                        PaintCell(path[paintedIndex]);
+                        paintedIndex++;
+                    }
+                })
+        );
+        const float scaleDump = 0.15f;
+        int dirScale = isVertical ? -1 : 1;
+        _sequence.Join(
+            transform.DOScale(new Vector3(1f + scaleDump * dirScale, 1f - scaleDump * dirScale, 1f), scaleDuration)
+                .SetEase(Ease.OutQuad)
+        );
+
+        _sequence.Append(
+            transform.DOScale(Vector3.one, scaleDuration)
+                .SetEase(Ease.OutElastic)
+        );
+
+        _sequence.OnComplete(() => { _isMoving = false; });
     }
 
-    private IEnumerator MoveRoutine(Vector2Int direction)
+    private List<CellView> GetPath(Vector2Int direction, ref Vector2Int lastPos)
     {
-        _isMoving = true;
-
-        while (_isMoving)
+        List<CellView> path = new List<CellView>();
+        while (true)
         {
-            Vector2Int nextPos = _currentPos + direction;
+            Vector2Int nextPos = lastPos + direction;
 
             if (_grid.IsEmpty(nextPos))
                 break;
 
-            _currentPos = nextPos;
-            CellView cell = _grid.GetCell(_currentPos);
-
-            Vector3 target = cell.Position;
-
-            while (Vector3.Distance(transform.position, target) > 0.01f)
-            {
-                transform.position = Vector3.MoveTowards(
-                    transform.position,
-                    target,
-                    _settings.MoveSpeed * Time.deltaTime);
-
-                yield return null;
-            }
-
-            PaintCell(_grid.GetCell(_currentPos));
+            lastPos = nextPos;
+            path.Add(_grid.GetCell(lastPos));
         }
 
-        _isMoving = false;
+        return path;
     }
+
 
     private void PaintCell(CellView cell)
     {

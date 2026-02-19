@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class CellView : MonoBehaviour
@@ -46,7 +47,7 @@ public class CellView : MonoBehaviour
         if (!_painted) return;
         
         _painted = false;
-        _rend.material.color = GameSettings.UnpaintedColor;
+        _rend.material.DOColor(GameSettings.UnpaintedColor, 0.5f);
     }
 
     public bool IsPainted() => _painted;
