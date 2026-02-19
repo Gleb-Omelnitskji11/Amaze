@@ -4,15 +4,17 @@ using UnityEngine;
 public class LevelsDataConfig : ScriptableObject
 {
     [SerializeField] private LevelData[] _levels;
-
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+    public LevelData[] levels => _levels;
+#endif
     public LevelData GetLevel(int index)
     {
         if (_levels == null || _levels.Length == 0)
             return null;
 
-        return _levels[index % _levels.Length];
+        return _levels[index % _levels.Length].DeepCopy();
     }
-    
+#if UNITY_EDITOR
     public void SetLevel(int index, LevelData level)
     {
         if (_levels == null || _levels.Length <= index)
@@ -22,6 +24,7 @@ public class LevelsDataConfig : ScriptableObject
 
         _levels[index] = level;
     }
+#endif
 
     public int LevelsCount => _levels?.Length ?? 0;
 }

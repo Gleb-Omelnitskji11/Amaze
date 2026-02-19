@@ -19,13 +19,17 @@ public class LevelEditorManager : MonoBehaviour
     [SerializeField] private Button _loadButton;
     [SerializeField] private Button _newButton;
     [SerializeField] private Button _applyButton;
+    [SerializeField] private Button _importButton;
+    [SerializeField] private Button _exportButton;
 
     private LevelData _editingLevel;
+    private LevelData[] _levels;
     private bool _isSettingStartPos;
 
     private void Awake()
     {
         Instance = this;
+        _levels = _levelsConfig.levels;
         Subscibe();
     }
 
@@ -35,6 +39,8 @@ public class LevelEditorManager : MonoBehaviour
         _saveButton.onClick.AddListener(SaveLevel);
         _setStartButton.onClick.AddListener(OnSetStartButtonClicked);
         _applyButton.onClick.AddListener(ApplyLevelToGrid);
+        _importButton.onClick.AddListener(ImportLevels);
+        _exportButton.onClick.AddListener(ExportLevels);
     }
 
     public void CreateNewLevel()
@@ -107,21 +113,31 @@ public class LevelEditorManager : MonoBehaviour
         if (_editingLevel == null) return;
         if (!int.TryParse(_levelIndex.text, out int index)) return;
 
-        _levelsConfig.SetLevel(index, _editingLevel);
-
+        SetLevel(index, _editingLevel);
 #if UNITY_EDITOR
+        _levelsConfig.SetLevel(index, _editingLevel);
         UnityEditor.EditorUtility.SetDirty(_levelsConfig);
         UnityEditor.AssetDatabase.SaveAssets();
 #endif
 
         Debug.Log($"Level {index} saved into LevelsDataConfig");
     }
+    
+    public void SetLevel(int index, LevelData level)
+    {
+        if (_levels == null || _levels.Length <= index)
+        {
+            System.Array.Resize(ref _levels, index + 1);
+        }
+
+        _levels[index] = level;
+    }
 
     private void LoadLevel()
     {
         if (!int.TryParse(_levelIndex.text, out int index)) return;
 
-        LevelData level = _levelsConfig.GetLevel(index);
+        LevelData level = _levels[index];
 
         if (level == null)
         {
@@ -136,43 +152,6 @@ public class LevelEditorManager : MonoBehaviour
 
         ApplyLevelToGrid();
     }
-    // public void SaveToJSON()
-    // {
-    //     if (_editingLevel == null) return;
-    //
-    //     string index = _levelIndex.text;
-    //     if (string.IsNullOrEmpty(index)) return;
-    //
-    //     string path = GetLevelPath(index);
-    //
-    //     string json = JsonUtility.ToJson(_editingLevel, true);
-    //     File.WriteAllText(path, json);
-    //
-    //     Debug.Log($"Level saved to: {path}");
-    // }
-    //
-    // public void LoadFromJSON()
-    // {
-    //     string index = _levelIndex.text;
-    //     if (string.IsNullOrEmpty(index)) return;
-    //
-    //     string path = GetLevelPath(index);
-    //
-    //     if (!File.Exists(path))
-    //     {
-    //         Debug.LogWarning("Level file not found!");
-    //         return;
-    //     }
-    //
-    //     string json = File.ReadAllText(path);
-    //     _editingLevel = JsonUtility.FromJson<LevelData>(json);
-    //
-    //     _grid.SetLevel(_editingLevel);
-    //     _grid.GenerateGrid();
-    //
-    //     _width.text = _editingLevel.Width.ToString();
-    //     _height.text = _editingLevel.Height.ToString();
-    // }
     
     public void ApplyLevelToGrid()
     {
@@ -180,11 +159,16 @@ public class LevelEditorManager : MonoBehaviour
         _grid.SetLevel(_editingLevel);
         _grid.UpdateBallPosition();
     }
+    
+    public void ExportLevels()
+    {
+        LevelsRuntimeJsonTool.ExportToJson(_levels);
+    }
 
-    // private string GetLevelPath(string index)
-    // {
-    //     return Path.Combine(LevelsFolder, $"level_{index}.json");
-    // }
+    public void ImportLevels()
+    {
+        _levels = LevelsRuntimeJsonTool.ImportFromJson();
+    }
 
     #endregion
 }
