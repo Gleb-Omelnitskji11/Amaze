@@ -1,7 +1,10 @@
 using System;
 
-[Serializable]
-public class LevelsJsonContainer
+namespace Amaze.Configs
 {
-    public LevelData[] Levels;
+    [Serializable]
+    public class LevelsJsonContainer
+    {
+        public LevelData[] Levels;
+    }
 }

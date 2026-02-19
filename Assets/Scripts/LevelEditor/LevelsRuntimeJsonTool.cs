@@ -1,49 +1,51 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
+using Amaze.Configs;
 using UnityEngine;
 
-public static class LevelsRuntimeJsonTool
+namespace Amaze.LevelEditor
 {
-    private const string FileName = "LevelsRuntime.json";
-
-    private static string FilePath =>
-        Path.Combine(Application.persistentDataPath, FileName);
-
-    public static void ExportToJson(LevelData[] levels)
+    public static class LevelsRuntimeJsonTool
     {
-        if (levels == null)
+        private const string FileName = "LevelsRuntime.json";
+
+        private static string FilePath =>
+            Path.Combine(Application.persistentDataPath, FileName);
+
+        public static void ExportToJson(LevelData[] levels)
         {
-            Debug.LogError("levels is null");
-            return;
+            if (levels == null)
+            {
+                Debug.LogError("levels is null");
+                return;
+            }
+
+            LevelsJsonContainer container = new LevelsJsonContainer
+            {
+                Levels = levels
+            };
+
+            string json = JsonUtility.ToJson(container, true);
+
+            File.WriteAllText(FilePath, json);
+
+            Debug.Log("Levels exported to: " + FilePath);
         }
 
-        LevelsJsonContainer container = new LevelsJsonContainer
+        public static LevelData[] ImportFromJson()
         {
-            Levels = levels
-        };
+            string json = File.ReadAllText(FilePath);
 
-        string json = JsonUtility.ToJson(container, true);
+            LevelsJsonContainer container =
+                JsonUtility.FromJson<LevelsJsonContainer>(json);
 
-        File.WriteAllText(FilePath, json);
+            if (container == null || container.Levels == null)
+            {
+                Debug.LogError("Invalid JSON format");
+                return null;
+            }
 
-        Debug.Log("Levels exported to: " + FilePath);
-    }
-
-    public static LevelData[] ImportFromJson()
-    {
-        string json = File.ReadAllText(FilePath);
-
-        LevelsJsonContainer container =
-            JsonUtility.FromJson<LevelsJsonContainer>(json);
-
-        if (container == null || container.Levels == null)
-        {
-            Debug.LogError("Invalid JSON format");
-            return null;
+            Debug.Log("Levels imported from JSON");
+            return container.Levels;
         }
-
-        Debug.Log("Levels imported from JSON");
-        return container.Levels;
     }
 }

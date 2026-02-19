@@ -1,60 +1,62 @@
 using DG.Tweening;
+using Amaze.Configs;
 using UnityEngine;
 
-public class CellView : MonoBehaviour
+namespace Amaze
 {
-    [SerializeField]
-    protected Renderer _rend;
-    
-    [SerializeField]
-    protected bool _painted;
-
-    public Vector2Int GridPosition;// { get; private set; }
-    public Vector3 Position => transform.position;
-    
-    protected static GameSettings GameSettings;
-
-    public static void Setup(GameSettings gameSettings)
+    public class CellView : MonoBehaviour
     {
-        GameSettings = gameSettings;
-    }
+        [SerializeField]
+        protected Renderer _rend;
+    
+        [SerializeField]
+        protected bool _painted;
 
-    public void Init(Vector2Int pos, CellType type)
-    {
-        GridPosition = pos;
+        public Vector2Int GridPosition;// { get; private set; }
+        public Vector3 Position => transform.position;
+        
+        protected static GameSettings GameSettings;
 
-        if (type == CellType.Empty)
+        public static void Setup(GameSettings gameSettings)
         {
-            _rend.material.color = GameSettings.EmptyColor;
+            GameSettings = gameSettings;
         }
-        else
+
+        public void Init(Vector2Int pos, CellType type)
         {
+            GridPosition = pos;
+
+            if (type == CellType.Empty)
+            {
+                _rend.material.color = GameSettings.EmptyColor;
+            }
+            else
+            {
+                _rend.material.color = GameSettings.UnpaintedColor;
+            }
+        }
+
+        public virtual void PaintFilled()
+        {
+            if (_painted) return;
+
+            _painted = true;
+            _rend.material.DOColor(GameSettings.PaintedColor, 0.5f);
+            GameManager.Instance.AddPaintedCell();
+        }
+
+        public void PaintUnpainted()
+        {
+            _painted = false;
             _rend.material.color = GameSettings.UnpaintedColor;
         }
-    }
-
-    public virtual void PaintFilled()
-    {
-        if (_painted) return;
-
-        _painted = true;
-        _rend.material.DOColor(GameSettings.PaintedColor, 0.5f);
-        GameManager.Instance.AddPaintedCell();
-    }
-
-    public void PaintUnpainted()
-    {
-        if (!_painted) return;
-        
-        _painted = false;
-        _rend.material.color = GameSettings.UnpaintedColor;
-    }
     
-    public void PaintEmpty()
-    {
-        _painted = false;
-        _rend.material.color = GameSettings.EmptyColor;
-    }
+        public void PaintEmpty()
+        {
+            _painted = false;
+            _rend.material.color = GameSettings.EmptyColor;
+        }
 
-    public bool IsPainted() => _painted;
+        public bool IsPainted() => _painted;
+    }
 }

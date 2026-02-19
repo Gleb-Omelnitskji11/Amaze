@@ -1,18 +1,20 @@
-using DG.Tweening;
-using UnityEngine;
+using Amaze;
 
-public class CellViewEditor : CellView
+namespace Amaze.LevelEditor
 {
-    public void OnMouseDown()
+    public class CellViewEditor : CellView
     {
-        LevelEditorManager.Instance.OnCellClicked(this);
-    }
-    
-    public override void PaintFilled()
-    {
-        if (_painted) return;
+        public void OnMouseDown()
+        {
+            LevelEditorManager.Instance.OnCellClicked(this);
+        }
+        
+        public override void PaintFilled()
+        {
+            if (_painted) return;
 
-        _painted = true;
-        _rend.material.color = GameSettings.PaintedColor;
+            _painted = true;
+            _rend.material.color = GameSettings.PaintedColor;
+        }
     }
 }

@@ -1,45 +1,55 @@
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+namespace Amaze
 {
-    [SerializeField] private LevelProgressor _levelProgressor;
-    [SerializeField] private GridManager _grid;
-    [SerializeField] private UIManager _ui;
-
-    private static GameManager LocalInstance;
-    private int _totalCells;
-    private int _paintedCells;
-    public static GameManager Instance => LocalInstance;
-
-    private void Awake()
+    public class GameManager : MonoBehaviour
     {
-        LocalInstance = this;
-    }
+        [SerializeField] private LevelProgressor _levelProgressor;
+        [SerializeField] private GridManager _grid;
+        [SerializeField] private UIManager _ui;
 
-    private void Start()
-    {
-        StartNewLevel();
-    }
+        private static GameManager LocalInstance;
+        private int _totalCells;
+        private int _paintedCells;
+        public static GameManager Instance => LocalInstance;
 
-    public void StartNewLevel()
-    {
-        _paintedCells = 0;
-        var level = _levelProgressor.GetNextLevel();
-        _totalCells = _grid.SetLevel(level);
-        _grid.BallInitialize();
-        _grid.PaintStartCell();
-    }
-
-    public void AddPaintedCell()
-    {
-        _paintedCells++;
-        float percent = (float)_paintedCells / _totalCells * 100f;
-        _ui.UpdateProgress(percent);
-
-        if (percent >= 100f)
+        private void Awake()
         {
-            _levelProgressor.CompleteLevel();
-            _ui.ShowWin();
+            LocalInstance = this;
+        }
+
+        private void Start()
+        {
+            _grid.SetInputForBall();
+            StartLevel();
+        }
+
+        public void StartNewLevel()
+        {
+            _grid.DestroyGrid();
+            StartLevel();
+        }
+
+        private void StartLevel()
+        {
+            _paintedCells = 0;
+            var level = _levelProgressor.GetNextLevel();
+            _totalCells = _grid.SetLevel(level);
+            _grid.PaintStartCell();
+            _ui.SetLevel(_levelProgressor.LevelIndex + 1);
+        }
+
+        public void AddPaintedCell()
+        {
+            _paintedCells++;
+            float percent = (float)_paintedCells / _totalCells * 100f;
+            _ui.UpdateProgress(percent);
+
+            if (percent >= 100f)
+            {
+                _levelProgressor.CompleteLevel();
+                _ui.ShowWin();
+            }
         }
     }
 }
