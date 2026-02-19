@@ -20,24 +20,24 @@ namespace Amaze
         {
 #if UNITY_EDITOR || UNITY_STANDALONE
 
-        if (Input.GetMouseButtonDown(0))
-            _startTouch = Input.mousePosition;
+            if (Input.GetMouseButtonDown(0))
+                _startTouch = Input.mousePosition;
 
-        if (Input.GetMouseButtonUp(0))
-            ProcessSwipe((Vector2)Input.mousePosition);
+            if (Input.GetMouseButtonUp(0))
+                ProcessSwipe((Vector2)Input.mousePosition);
 
 #else
 
-    if (Input.touchCount == 0)
-        return;
+            if (Input.touchCount == 0)
+                return;
 
-    Touch touch = Input.GetTouch(0);
+            Touch touch = Input.GetTouch(0);
 
-    if (touch.phase == TouchPhase.Began)
-        _startTouch = touch.position;
+            if (touch.phase == TouchPhase.Began)
+                _startTouch = touch.position;
 
-    if (touch.phase == TouchPhase.Ended)
-        ProcessSwipe(touch.position);
+            if (touch.phase == TouchPhase.Ended)
+                ProcessSwipe(touch.position);
 
 #endif
         }
@@ -46,15 +46,15 @@ namespace Amaze
         {
             Vector2 delta = endPosition - _startTouch;
 
-        if (delta.sqrMagnitude < SwipeThreshold * SwipeThreshold)
-            return;
+            if (delta.sqrMagnitude < SwipeThreshold * SwipeThreshold)
+                return;
 
-        Vector2Int swipe;
+            Vector2Int swipe;
 
-        if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
-            swipe = delta.x > 0 ? Vector2Int.right : Vector2Int.left;
-        else
-            swipe = delta.y > 0 ? Vector2Int.up : Vector2Int.down;
+            if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+                swipe = delta.x > 0 ? Vector2Int.right : Vector2Int.left;
+            else
+                swipe = delta.y > 0 ? Vector2Int.up : Vector2Int.down;
 
             OnSwipeEvent?.Invoke(swipe);
         }
