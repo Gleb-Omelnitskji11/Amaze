@@ -26,6 +26,7 @@ public class GameManager : MonoBehaviour
         _paintedCells = 0;
         var level = _levelProgressor.GetNextLevel();
         _totalCells = _grid.SetLevel(level);
+        _grid.BallInitialize();
         _grid.PaintStartCell();
     }
 

@@ -19,6 +19,10 @@ public class GridManager : MonoBehaviour
     {
         CellView.Setup(_gameSettings);
         _ball = Instantiate(_ballPrefab);
+    }
+
+    public void BallInitialize()
+    {
         _ball.Initialize(_gameSettings, this);
     }
 
@@ -26,8 +30,13 @@ public class GridManager : MonoBehaviour
     {
         CurrentLevel = level;
         int cellsCount = GenerateGrid();
-        _ball.SetPosition(CurrentLevel.StartPosition);
+        UpdateBallPosition();
         return cellsCount;
+    }
+
+    public void UpdateBallPosition()
+    {
+        _ball.SetPosition(CurrentLevel.StartPosition);
     }
 
     public void PaintStartCell()
@@ -56,7 +65,16 @@ public class GridManager : MonoBehaviour
         return Vector2Int.zero;
     }
 
-    public int GenerateGrid()
+    public void DestroyGrid()
+    {
+        foreach (var cell in _grid)
+        {
+            Destroy(cell);
+        }
+        _grid = new CellView[0, 0];
+    }
+
+    private int GenerateGrid()
     {
         int cellsCount = 0;
         _grid = new CellView[CurrentLevel.Width, CurrentLevel.Height];

@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class LevelProgressor : MonoBehaviour
 {
-    [SerializeField]
-    private LevelsDataConfig _levelsConfig;
+    [SerializeField] private LevelsDataConfig _levelsConfig;
     
     private const string LevelKey = "Level";
     private int _levelIndex;

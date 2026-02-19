@@ -4,15 +4,15 @@ using UnityEngine;
 public class CellView : MonoBehaviour
 {
     [SerializeField]
-    private Renderer _rend;
+    protected Renderer _rend;
     
     [SerializeField]
-    private bool _painted;
+    protected bool _painted;
 
     public Vector2Int GridPosition;// { get; private set; }
     public Vector3 Position => transform.position;
     
-    private static GameSettings GameSettings;
+    protected static GameSettings GameSettings;
 
     public static void Setup(GameSettings gameSettings)
     {
@@ -25,7 +25,7 @@ public class CellView : MonoBehaviour
 
         if (type == CellType.Empty)
         {
-            _rend.material.color = GameSettings.WallColor;
+            _rend.material.color = GameSettings.EmptyColor;
         }
         else
         {
@@ -33,12 +33,12 @@ public class CellView : MonoBehaviour
         }
     }
 
-    public void PaintFilled()
+    public virtual void PaintFilled()
     {
         if (_painted) return;
 
         _painted = true;
-        _rend.material.color = GameSettings.PaintedColor;
+        _rend.material.DOColor(GameSettings.PaintedColor, 0.5f);
         GameManager.Instance.AddPaintedCell();
     }
 
@@ -47,7 +47,13 @@ public class CellView : MonoBehaviour
         if (!_painted) return;
         
         _painted = false;
-        _rend.material.DOColor(GameSettings.UnpaintedColor, 0.5f);
+        _rend.material.color = GameSettings.UnpaintedColor;
+    }
+    
+    public void PaintEmpty()
+    {
+        _painted = false;
+        _rend.material.color = GameSettings.EmptyColor;
     }
 
     public bool IsPainted() => _painted;
