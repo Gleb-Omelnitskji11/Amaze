@@ -60,20 +60,43 @@ namespace Amaze
 
             _sequence = DOTween.Sequence();
 
-            _sequence.Append(
-                transform.DOMove(targetPosition, duration)
-                    .SetEase(Ease.InOutSine)
-                    .OnUpdate(() =>
-                    {
-                        if (paintedIndex >= path.Count) return;
+            // _sequence.Append(
+            //     transform.DOMove(targetPosition, duration)
+            //         .SetEase(Ease.InOutSine)
+            //         .OnUpdate(() =>
+            //         {
+            //             if (paintedIndex >= path.Count) return;
+            //
+            //             if (Vector3.Distance(transform.position, path[paintedIndex].Position) < 0.05f)
+            //             {
+            //                 PaintCell(path[paintedIndex]);
+            //                 paintedIndex++;
+            //             }
+            //         })
+            // );
+            
+            Tween moveTween = transform.DOMove(targetPosition, duration)
+                .SetEase(Ease.InOutSine);
 
-                        if (Vector3.Distance(transform.position, path[paintedIndex].Position) < 0.05f)
-                        {
-                            PaintCell(path[paintedIndex]);
-                            paintedIndex++;
-                        }
-                    })
-            );
+            _sequence.Append(moveTween);
+
+            int totalCells = path.Count;
+
+            moveTween.OnUpdate(() =>
+            {
+                if (paintedIndex >= totalCells) return;
+
+                float progress = moveTween.ElapsedPercentage();
+
+                int expectedIndex = Mathf.FloorToInt(progress * totalCells);
+
+                while (paintedIndex <= expectedIndex && paintedIndex < totalCells)
+                {
+                    PaintCell(path[paintedIndex]);
+                    paintedIndex++;
+                }
+            });
+            
             const float scaleDump = 0.15f;
             int dirScale = isVertical ? -1 : 1;
             _sequence.Join(

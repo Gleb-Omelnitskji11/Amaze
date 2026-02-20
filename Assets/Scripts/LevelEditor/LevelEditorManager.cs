@@ -6,10 +6,11 @@ using UnityEngine.UI;
 
 namespace Amaze.LevelEditor
 {
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
     public class LevelEditorManager : MonoBehaviour
     {
         public static LevelEditorManager Instance;
-    
+
         [SerializeField] private GridManager _grid;
         [SerializeField] private LevelsDataConfig _levelsConfig;
 
@@ -46,26 +47,7 @@ namespace Amaze.LevelEditor
             _exportButton.onClick.AddListener(ExportLevels);
         }
 
-        public void CreateNewLevel()
-        {
-            if (!int.TryParse(_width.text, out int width)) return;
-            if (!int.TryParse(_height.text, out int height)) return;
-
-            _editingLevel = new LevelData
-            {
-                Width = width,
-                Height = height,
-                Cells = new CellType[width * height],
-                StartPosition = Vector2Int.zero
-            };
-
-            for (int i = 0; i < _editingLevel.Cells.Length; i++)
-                _editingLevel.Cells[i] = CellType.Empty;
-
-            ApplyLevelToGrid();
-        }
-
-        public void ToggleWall(CellViewEditor cellView)
+        private void ToggleWall(CellViewEditor cellView)
         {
             if (_editingLevel == null) return;
 
@@ -84,12 +66,12 @@ namespace Amaze.LevelEditor
             }
         }
 
-        public void OnSetStartButtonClicked()
+        private void OnSetStartButtonClicked()
         {
             _isSettingStartPos = true;
         }
 
-        public void SetStartPosition(Vector2Int pos)
+        private void SetStartPosition(Vector2Int pos)
         {
             _editingLevel.StartPosition = pos;
             _isSettingStartPos = false;
@@ -111,6 +93,7 @@ namespace Amaze.LevelEditor
         }
 
         #region Save / Load
+
         private void SaveLevel()
         {
             if (_editingLevel == null) return;
@@ -125,7 +108,7 @@ namespace Amaze.LevelEditor
 
             Debug.Log($"Level {index} saved into LevelsDataConfig");
         }
-    
+
         public void SetLevel(int index, LevelData level)
         {
             if (_levels == null || _levels.Length <= index)
@@ -155,14 +138,14 @@ namespace Amaze.LevelEditor
 
             ApplyLevelToGrid();
         }
-    
+
         public void ApplyLevelToGrid()
         {
             _grid.DestroyGrid();
             _grid.SetLevel(_editingLevel);
             _grid.UpdateBallPosition();
         }
-    
+
         public void ExportLevels()
         {
             LevelsRuntimeJsonTool.ExportToJson(_levels);
@@ -175,4 +158,5 @@ namespace Amaze.LevelEditor
 
         #endregion
     }
+#endif
 }
