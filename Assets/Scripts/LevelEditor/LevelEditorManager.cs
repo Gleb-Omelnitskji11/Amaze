@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using Amaze;
 using Amaze.Configs;
@@ -22,8 +23,7 @@ namespace Amaze.LevelEditor
         [SerializeField] private Button _setStartButton;
         [SerializeField] private Button _saveButton;
         [SerializeField] private Button _loadButton;
-        [SerializeField] private Button _newButton;
-        [SerializeField] private Button _applyButton;
+        [SerializeField] private Button _createButton;
         [SerializeField] private Button _importButton;
         [SerializeField] private Button _exportButton;
 
@@ -45,7 +45,7 @@ namespace Amaze.LevelEditor
             _loadButton.onClick.AddListener(LoadLevel);
             _saveButton.onClick.AddListener(SaveLevel);
             _setStartButton.onClick.AddListener(OnSetStartButtonClicked);
-            _applyButton.onClick.AddListener(ApplyLevelToGrid);
+            _createButton.onClick.AddListener(CreateNewLevel);
             _importButton.onClick.AddListener(ImportLevels);
             _exportButton.onClick.AddListener(ExportLevels);
         }
@@ -108,7 +108,7 @@ namespace Amaze.LevelEditor
                 return;
             }
 
-            SetLevel(index, _editingLevel);
+            SetLevel(_editingLevel, ref index);
 #if UNITY_EDITOR
             _levelsConfig.SetLevel(index, _editingLevel);
             UnityEditor.EditorUtility.SetDirty(_levelsConfig);
@@ -118,11 +118,12 @@ namespace Amaze.LevelEditor
             Debug.Log($"Level {index} saved into LevelsDataConfig");
         }
 
-        public void SetLevel(int index, LevelData level)
+        private void SetLevel(LevelData level, ref int index)
         {
             if (_levels == null || _levels.Length <= index)
             {
-                System.Array.Resize(ref _levels, index + 1);
+                index = _levels?.Length ?? 0;
+                Array.Resize(ref _levels, index + 1);
             }
 
             _levels[index] = level;
@@ -148,18 +149,36 @@ namespace Amaze.LevelEditor
             ApplyLevelToGrid();
         }
 
-        public void ApplyLevelToGrid()
+        private void CreateNewLevel()
+        {
+            Int32.TryParse(_width.text, out int width);
+            Int32.TryParse(_height.text, out int height);
+
+            if (width <= 0 || height <= 0)
+            {
+                Debug.LogWarning("Width and Height must be greater than 0");
+                return;
+            }
+            _editingLevel = new LevelData();
+            _editingLevel.Width = width;
+            _editingLevel.Height = height;
+            _editingLevel.Cells = new CellType[width * height];
+            _editingLevel.StartPosition = Vector2Int.zero;
+            ApplyLevelToGrid();
+        }
+
+        private void ApplyLevelToGrid()
         {
             _grid.DestroyGrid();
             _grid.SetLevel(_editingLevel, _ballSpawner.Ball);
         }
 
-        public void ExportLevels()
+        private void ExportLevels()
         {
             LevelsRuntimeJsonTool.ExportToJson(_levels);
         }
 
-        public void ImportLevels()
+        private void ImportLevels()
         {
             _levels = LevelsRuntimeJsonTool.ImportFromJson() ?? System.Array.Empty<LevelData>();
         }
