@@ -102,6 +102,12 @@ namespace Amaze.LevelEditor
             if (_editingLevel == null) return;
             if (!int.TryParse(_levelIndex.text, out int index)) return;
 
+            if (!LevelValidator.Validate(_editingLevel, out string error))
+            {
+                Debug.LogError("Level validation failed: " + error);
+                return;
+            }
+
             SetLevel(index, _editingLevel);
 #if UNITY_EDITOR
             _levelsConfig.SetLevel(index, _editingLevel);
@@ -155,7 +161,7 @@ namespace Amaze.LevelEditor
 
         public void ImportLevels()
         {
-            _levels = LevelsRuntimeJsonTool.ImportFromJson();
+            _levels = LevelsRuntimeJsonTool.ImportFromJson() ?? System.Array.Empty<LevelData>();
         }
 
         #endregion

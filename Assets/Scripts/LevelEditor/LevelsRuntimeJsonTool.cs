@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Amaze.Configs;
 using UnityEngine;
@@ -33,15 +34,38 @@ namespace Amaze.LevelEditor
 
         public static LevelData[] ImportFromJson()
         {
-            string json = File.ReadAllText(FilePath);
+            if (!File.Exists(FilePath))
+            {
+                Debug.LogWarning("Levels JSON not found: " + FilePath);
+                return Array.Empty<LevelData>();
+            }
 
-            LevelsJsonContainer container =
-                JsonUtility.FromJson<LevelsJsonContainer>(json);
+            string json;
+            try
+            {
+                json = File.ReadAllText(FilePath);
+            }
+            catch (IOException e)
+            {
+                Debug.LogError("Failed to read levels JSON: " + e.Message);
+                return Array.Empty<LevelData>();
+            }
+
+            LevelsJsonContainer container;
+            try
+            {
+                container = JsonUtility.FromJson<LevelsJsonContainer>(json);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Failed to parse levels JSON: " + e.Message);
+                return Array.Empty<LevelData>();
+            }
 
             if (container == null || container.Levels == null)
             {
                 Debug.LogError("Invalid JSON format");
-                return null;
+                return Array.Empty<LevelData>();
             }
 
             Debug.Log("Levels imported from JSON");

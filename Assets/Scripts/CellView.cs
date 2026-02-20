@@ -29,6 +29,10 @@ namespace Amaze
         {
             GridPosition = pos;
 
+            _painted = false;
+            if (_rend != null)
+                _rend.material.DOKill();
+
             if (type == CellType.Empty)
             {
                 _rend.material.color = GameSettings.EmptyColor;
