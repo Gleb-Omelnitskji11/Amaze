@@ -59,21 +59,6 @@ namespace Amaze
             int paintedIndex = 0;
 
             _sequence = DOTween.Sequence();
-
-            // _sequence.Append(
-            //     transform.DOMove(targetPosition, duration)
-            //         .SetEase(Ease.InOutSine)
-            //         .OnUpdate(() =>
-            //         {
-            //             if (paintedIndex >= path.Count) return;
-            //
-            //             if (Vector3.Distance(transform.position, path[paintedIndex].Position) < 0.05f)
-            //             {
-            //                 PaintCell(path[paintedIndex]);
-            //                 paintedIndex++;
-            //             }
-            //         })
-            // );
             
             Tween moveTween = transform.DOMove(targetPosition, duration)
                 .SetEase(Ease.InOutSine);
