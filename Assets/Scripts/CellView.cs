@@ -1,3 +1,4 @@
+using System;
 using DG.Tweening;
 using Amaze.Configs;
 using UnityEngine;
@@ -22,6 +23,8 @@ namespace Amaze
             GameSettings = gameSettings;
         }
 
+        public event Action<CellView> OnPainted;
+
         public void Init(Vector2Int pos, CellType type)
         {
             GridPosition = pos;
@@ -42,7 +45,7 @@ namespace Amaze
 
             _painted = true;
             _rend.material.DOColor(GameSettings.PaintedColor, 0.5f);
-            GameManager.Instance.AddPaintedCell();
+            OnPainted?.Invoke(this);
         }
 
         public void PaintUnpainted()
@@ -55,6 +58,12 @@ namespace Amaze
         {
             _painted = false;
             _rend.material.color = GameSettings.EmptyColor;
+        }
+
+        public void Deactivate()
+        {
+            _painted = false;
+            gameObject.SetActive(false);
         }
 
         public bool IsPainted() => _painted;

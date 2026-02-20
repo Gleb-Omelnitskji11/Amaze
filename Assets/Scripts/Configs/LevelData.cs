@@ -16,8 +16,21 @@ namespace Amaze.Configs
             return Cells[y * Width + x];
         }
 
+        //Method for lvl editor
         public void SetCell(int x, int y, CellType type)
         {
+            if (Cells == null || Cells.Length != Width * Height)
+            {
+                Debug.LogError("LevelData.Cells is null or has invalid length");
+                return;
+            }
+
+            if (x < 0 || x >= Width || y < 0 || y >= Height)
+            {
+                Debug.LogError("Coordinates out of bounds");
+                return;
+            }
+
             Cells[y * Width + x] = type;
         }
 
@@ -31,6 +44,7 @@ namespace Amaze.Configs
             {
                 levelData.Cells[i] = Cells[i];
             }
+            levelData.StartPosition = StartPosition;
             return levelData;
         }
     }

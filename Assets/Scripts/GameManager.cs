@@ -7,6 +7,7 @@ namespace Amaze
         [SerializeField] private LevelProgressor _levelProgressor;
         [SerializeField] private GridManager _grid;
         [SerializeField] private UIManager _ui;
+        [SerializeField] private BallSpawner _ballSpawner;
 
         private static GameManager LocalInstance;
         private int _totalCells;
@@ -16,11 +17,22 @@ namespace Amaze
         private void Awake()
         {
             LocalInstance = this;
+            Subscribe();
+        }
+
+        private void Subscribe()
+        {
+            _grid.OnCellPainted += AddPaintedCell;
+        }
+
+        private void OnDestroy()
+        {
+            _grid.OnCellPainted -= AddPaintedCell;
         }
 
         private void Start()
         {
-            _grid.SetInputForBall();
+            _ballSpawner.Spawn(_grid);
             StartLevel();
         }
 
@@ -34,12 +46,12 @@ namespace Amaze
         {
             _paintedCells = 0;
             var level = _levelProgressor.GetNextLevel();
-            _totalCells = _grid.SetLevel(level);
+            _totalCells = _grid.SetLevel(level, _ballSpawner.Ball);
             _grid.PaintStartCell();
             _ui.SetLevel(_levelProgressor.LevelIndex + 1);
         }
 
-        public void AddPaintedCell()
+        private void AddPaintedCell()
         {
             _paintedCells++;
             float percent = (float)_paintedCells / _totalCells * 100f;

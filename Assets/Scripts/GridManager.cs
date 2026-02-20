@@ -1,46 +1,39 @@
 using UnityEngine;
 using Amaze.Configs;
+using System;
 
 namespace Amaze
 {
     public class GridManager : MonoBehaviour
     {
-        [SerializeField] private CellView _cellPrefab;
-        [SerializeField] private Transform _gridParent;
-        [SerializeField] private BallController _ballPrefab;
+        [SerializeField] private CellSpawner _cellSpawner;
         [SerializeField] private GameSettings _gameSettings;
     
         [SerializeField] private float _cellSize = 1f;
         [SerializeField] private float _spacing = 0.1f;
 
         private CellView[,] _grid = new CellView[0,0];
-        private BallController _ball;
+
+        public event Action OnCellPainted;
 
         public LevelData CurrentLevel { get; private set; }
 
         private void Start()
         {
             CellView.Setup(_gameSettings);
-            _ball = Instantiate(_ballPrefab);
-            _ball.Initialize(_gameSettings, this);
         }
 
-        public void SetInputForBall()
-        {
-            _ball.SetInput();
-        }
-
-        public int SetLevel(LevelData level)
+        public int SetLevel(LevelData level, BallController ball)
         {
             CurrentLevel = level;
             int cellsCount = GenerateGrid();
-            UpdateBallPosition();
+            UpdateBallPosition(ball);
             return cellsCount;
         }
 
-        public void UpdateBallPosition()
+        public void UpdateBallPosition(BallController ball)
         {
-            _ball.SetPosition(CurrentLevel.StartPosition);
+            ball.SetPosition(CurrentLevel.StartPosition);
         }
 
         public void PaintStartCell()
@@ -71,10 +64,9 @@ namespace Amaze
 
         public void DestroyGrid()
         {
-            foreach (var cell in _grid)
-            {
-                Destroy(cell.gameObject);
-            }
+            if (_cellSpawner != null)
+                _cellSpawner.DeactivateAll();
+
             _grid = new CellView[0, 0];
         }
 
@@ -91,20 +83,35 @@ namespace Amaze
                 -totalHeight / 2f + _cellSize / 2f,
                 0f);
 
+            if (_cellSpawner == null)
+            {
+                Debug.LogError("CellSpawner is not set in GridManager");
+                return 0;
+            }
+
+            int requiredCells = CurrentLevel.Width * CurrentLevel.Height;
+            _cellSpawner.EnsureCapacity(requiredCells);
+            _cellSpawner.DeactivateRange(requiredCells);
+
             for (int x = 0; x < CurrentLevel.Width; x++)
             {
                 for (int y = 0; y < CurrentLevel.Height; y++)
                 {
+                    int index = y * CurrentLevel.Width + x;
                     Vector3 position = new Vector3(
                         x * (_cellSize + _spacing),
                         y * (_cellSize + _spacing),
                         0f) + originOffset;
 
-                    CellView cell = Instantiate(_cellPrefab, position, Quaternion.identity, _gridParent);
+                    CellView cell = _cellSpawner.Get(index);
+                    cell.transform.position = position;
 
                     cell.transform.localScale = Vector3.one * _cellSize;
                     var cellType = CurrentLevel.GetCell(x, y);
                     cell.Init(new Vector2Int(x, y), cellType);
+
+                    cell.OnPainted -= HandleCellPainted;
+                    cell.OnPainted += HandleCellPainted;
 
                     _grid[x, y] = cell;
                     if(cellType == CellType.Exist)
@@ -115,6 +122,11 @@ namespace Amaze
             }
 
             return cellsCount;
+        }
+
+        private void HandleCellPainted(CellView cell)
+        {
+            OnCellPainted?.Invoke();
         }
 
         public bool IsEmpty(Vector2Int pos)

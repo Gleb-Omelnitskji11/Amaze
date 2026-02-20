@@ -13,19 +13,28 @@ namespace Amaze
 
         private bool _isMoving;
         private Vector2Int _currentPos;
-        private float _speed;
         private Sequence _sequence;
 
-        public void Initialize(GameSettings settings, GridManager grid)
+        public void Initialize(GameSettings settings, GridManager grid, InputController inputController)
         {
             _settings = settings;
             _grid = grid;
+            _inputController = inputController;
+
+            Subscribe();
         }
 
-        public void SetInput()
+        private void Subscribe()
         {
-            _inputController = InputController.Instance;
-            _inputController.OnSwipeEvent += Move;
+            if (_inputController != null)
+                _inputController.OnSwipeEvent += Move;
+        }
+
+        private void OnDestroy()
+        {
+            _sequence?.Kill();
+            if (_inputController != null)
+                _inputController.OnSwipeEvent -= Move;
         }
 
         public void SetPosition(Vector2Int newPos)

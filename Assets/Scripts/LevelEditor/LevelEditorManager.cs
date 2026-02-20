@@ -12,6 +12,7 @@ namespace Amaze.LevelEditor
         public static LevelEditorManager Instance;
 
         [SerializeField] private GridManager _grid;
+        [SerializeField] private BallSpawner _ballSpawner;
         [SerializeField] private LevelsDataConfig _levelsConfig;
 
         [SerializeField] private TMP_InputField _levelIndex;
@@ -33,6 +34,8 @@ namespace Amaze.LevelEditor
         private void Awake()
         {
             Instance = this;
+
+            _ballSpawner.Spawn(_grid);
             _levels = _levelsConfig.GetAllLevels();
             Subscribe();
         }
@@ -76,7 +79,7 @@ namespace Amaze.LevelEditor
             _editingLevel.StartPosition = pos;
             _isSettingStartPos = false;
 
-            _grid.UpdateBallPosition();
+            _grid.UpdateBallPosition(_ballSpawner.Ball);
         }
 
         public void OnCellClicked(CellViewEditor cellView)
@@ -142,8 +145,7 @@ namespace Amaze.LevelEditor
         public void ApplyLevelToGrid()
         {
             _grid.DestroyGrid();
-            _grid.SetLevel(_editingLevel);
-            _grid.UpdateBallPosition();
+            _grid.SetLevel(_editingLevel, _ballSpawner.Ball);
         }
 
         public void ExportLevels()
