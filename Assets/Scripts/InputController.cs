@@ -7,12 +7,9 @@ namespace Amaze
     {
         private Vector2 _startTouch;
         private const float SwipeThreshold = 50f;
-        
-        public static InputController Instance;
 
         private void Start()
         {
-            Instance = this;
             Input.multiTouchEnabled = false;
         }
 

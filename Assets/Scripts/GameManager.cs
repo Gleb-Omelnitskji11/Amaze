@@ -9,20 +9,18 @@ namespace Amaze
         [SerializeField] private UIManager _ui;
         [SerializeField] private BallSpawner _ballSpawner;
 
-        private static GameManager LocalInstance;
         private int _totalCells;
         private int _paintedCells;
-        public static GameManager Instance => LocalInstance;
 
         private void Awake()
         {
-            LocalInstance = this;
             Subscribe();
         }
 
         private void Subscribe()
         {
             _grid.OnCellPainted += AddPaintedCell;
+            _ui.OnRestartClicked += StartNewLevel;
         }
 
         private void OnDestroy()

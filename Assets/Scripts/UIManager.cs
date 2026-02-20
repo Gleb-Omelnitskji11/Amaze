@@ -1,3 +1,4 @@
+using System;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -15,6 +16,7 @@ namespace Amaze
         private Tween _progressTween;
         private Tween _textTween;
         private float _currentVisualProgress;
+
         private void Awake()
         {
             _restartButton.onClick.AddListener(Restart);
@@ -61,16 +63,15 @@ namespace Amaze
         public void Restart()
         {
             ResetInstant();
-            GameManager.Instance.StartNewLevel();
+            OnRestartClicked?.Invoke();
             _winPanel.SetActive(false);
-            //UnityEngine.SceneManagement.SceneManager.LoadScene(0);
         }
 
         public void SetLevel(int level)
         {
             _currentLevelText.text = level.ToString();
         }
-    
+
         private void ResetInstant()
         {
             _progressTween?.Kill();
@@ -81,5 +82,7 @@ namespace Amaze
             _progressScrollbar.size = 0f;
             _progressText.text = "0%";
         }
+
+        public event Action OnRestartClicked;
     }
 }
