@@ -26,15 +26,13 @@ namespace Amaze
 
         private void Subscribe()
         {
-            if (_inputController != null)
-                _inputController.OnSwipeEvent += Move;
+            _inputController.OnSwipeEvent += Move;
         }
 
         private void OnDestroy()
         {
             _sequence?.Kill();
-            if (_inputController != null)
-                _inputController.OnSwipeEvent -= Move;
+            _inputController.OnSwipeEvent -= Move;
         }
 
         public void SetPosition(Vector2Int newPos)
@@ -68,7 +66,7 @@ namespace Amaze
             int paintedIndex = 0;
 
             _sequence = DOTween.Sequence();
-            
+
             Tween moveTween = transform.DOMove(targetPosition, duration)
                 .SetEase(Ease.InOutSine);
 
@@ -90,7 +88,7 @@ namespace Amaze
                     paintedIndex++;
                 }
             });
-            
+
             const float scaleDump = 0.15f;
             int dirScale = isVertical ? -1 : 1;
             _sequence.Join(

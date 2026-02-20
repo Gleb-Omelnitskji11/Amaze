@@ -12,11 +12,16 @@ Amaze is a small swipe-based puzzle game: move the ball across the grid and **pa
 - `Assets/Scenes/`
   - `GameScene.unity` — main gameplay scene
   - `LevelEditorScene.unity` — level editor scene
-- `Assets/Scripts/` — runtime code
-  - `Configs/` — level/settings data models + ScriptableObject configs
-  - `LevelEditor/` — level editor runtime scripts
-- `Assets/Resources/LevelsExport.json` — example JSON container with levels from level editor win build (it should be added by Tool->Import and remove this file after). 
-If you use LevelEditor only in unity, you not need in it (it updates config by button `Save`)
+- `Assets/Scripts/` — code
+  - `Configs/` — data models + ScriptableObject types
+  - `LevelEditor/` — level editor scripts
+  - `Editor/` — editor-only tools (menu items)
+- `Assets/GameResources/`
+  - `Configs/` — `GameSettings.asset`, `LevelsConfig.asset`
+  - `Prefabs/` — gameplay prefabs (`Ball`, `Cell`)
+- `Assets/LevelEditorResources/`
+  - `CellEditor.prefab` — editor cell prefab
+- `Assets/Resources/LevelsExport.json` — optional example JSON container with levels (can be imported into `LevelsDataConfig` via editor tools)
 
 ## Gameplay architecture
 
@@ -24,9 +29,11 @@ If you use LevelEditor only in unity, you not need in it (it updates config by b
   - `GameManager` starts a level and tracks progress in level by `UIManager`.
 - **Level selection / progress**
   - `LevelProgressor` reads and stores the current level index via `PlayerPrefs` (`Level` key).
+  - `LevelsConfigr` stores data of levels. 
+  - "Assets/Resources/LevelsExport" is a JUST EXAMPLE of an import/export file from the level editor windows build. You don`t if you edit levels in unity.
 - **Grid generation**
   - `GridManager.SetLevel(LevelData)` generates a 2D grid of `CellView` instances.
-  - `GridManager` also instantiates and initializes `BallController`.
+  - `BallSpawner` instantiates and initializes `BallController`.
   - You can change cell size and spacing for all cells.
 - **Input**
   - `InputController` emits `OnSwipeEvent(Vector2Int)`.
@@ -63,10 +70,11 @@ This is enforced by compile guards in:
 
 ### Editor capabilities
 
+- Create a new level by size (width/height)
 - Load/edit/save a level by index
-- Toggle cells between `Exist` and `Empty`byclicking
-- Set `StartPosition` (you should click on the certain cell after click on the button)
-- Apply current level data to the grid
+- Toggle cells between `Exist` and `Empty` by clicking
+- Set `StartPosition` (click a cell after pressing the set-start button)
+- Validation on Save (cannot save invalid/unsolvable levels)
 
 ### Import / Export levels
 
@@ -86,15 +94,29 @@ This is enforced by compile guards in:
   - Open `Assets/Scenes/LevelEditorScene.unity` and press Play.
   - You can also build a **Windows standalone** player and run the Level Editor there (it is enabled under `UNITY_STANDALONE_WIN`).
 
+## Controls
+
+- **Gameplay**
+  - Swipe (mouse drag in Editor / touch on device) to move the ball in 4 directions.
+  - The ball moves until it hits an obstacle or the grid boundary.
+- **Level Editor**
+  - Click on cells to toggle `Exist` / `Empty`.
+  - Use the UI buttons to create a new level, set start position, load/save.
+
+## Build notes
+
+- Add both scenes to Build Settings:
+  - `Assets/Scenes/GameScene.unity`
+  - `Assets/Scenes/LevelEditorScene.unity`
+- Android: enable ARM64 before building the `.apk`.
+
 ## Future improvements
 
-- **Refactor `GridManager` into components**
-  - Split responsibilities (grid generation, coordinate/layout, ball lifecycle, cell lifecycle) into separate components/services.
-- **Factories + object pooling**
-  - Introduce factories and object pools for `CellView` and `BallController` to reduce `Instantiate/Destroy` overhead (especially when regenerating grids / switching levels).
-  - Add a capability to change a theme (colors or sprites)
+- **DI**
+  - The project is too small for zenject, but something like 'ServiceLocator' is good if the game will be increased.
+- **Level editor**
+  - Undo/redo
 - **Graphic**
   - Make a fake 3d view
-- **Di**
-  - Replace singletons with zenject/Service locator/VContainer
+  - Make ability to change cells and ball theme (color/ sprite)
 - Fix minor bug when you do multiple clicks on restart button and multiple scrolling on the screen during one time. If you are doing it during some seconds, the ball stops respond. Relaunch fixes it.

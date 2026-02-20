@@ -26,6 +26,7 @@ namespace Amaze
         private void OnDestroy()
         {
             _grid.OnCellPainted -= AddPaintedCell;
+            _ui.OnRestartClicked -= StartNewLevel;
         }
 
         private void Start()
